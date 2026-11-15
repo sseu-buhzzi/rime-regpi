@@ -1,0 +1,44 @@
+{
+  "nodes": {
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1752077645,
+        "narHash": "sha256-HM791ZQtXV93xtCY+ZxG1REzhQenSQO020cu6rHtAPk=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "be9e214982e20b8310878ac2baa063a961c1bdf6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "rime-terra-pinyin-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1675710173,
+        "narHash": "sha256-93Kzph4q8LCNYTMk3rjO7mXwzfyF4cHnuDAQrxWOPDg=",
+        "owner": "rime",
+        "repo": "rime-terra-pinyin",
+        "rev": "9427853de91d645d9aca9ceace8fe9e9d8bc5b50",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rime",
+        "repo": "rime-terra-pinyin",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "nixpkgs": "nixpkgs",
+        "rime-terra-pinyin-src": "rime-terra-pinyin-src"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
