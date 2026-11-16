@@ -2,115 +2,193 @@
 import argparse
 import re
 from pathlib import Path
+from typing import Never
 
-ZERO = {
-    "yi": "i",
-    "ya": "ia",
-    "ye": "ie",
-    "yao": "iau",
-    "you": "iu",
-    "yan": "ian",
-    "yin": "in",
-    "yang": "iang",
-    "ying": "ing",
-    "yong": "yng",
-    "yo": "io",
-    "wu": "u",
-    "wa": "ua",
-    "wo": "uo",
-    "wai": "uai",
-    "wei": "ui",
-    "wan": "uan",
-    "wen": "un",
-    "wang": "uang",
-    "weng": "ung",
-    "yu": "y",
-    "yue": "ye",
-    "yuan": "yan",
-    "yun": "yn",
+TOKEN_RE = re.compile(
+    r"([pbmftdnlrqjxkgh']|[czs]h?)?"
+    r"([iuüv]|y[iu]?|wu?)?"
+    r"([êoa]|eh?)?"
+    r"([iuonr]|ng)?"
+    r"([1-5])?"
+)
+
+REGPI_FINAL_BY_PINYIN = {
+    tuple(pinyin.split("-", 2)): tuple(regpi.split("-", 2))
+    for regpi, pinyin_list in [
+        # high back.
+        ("eu--", ["--"]),
+        ("u--", ["u--"]),
+        # high front.
+        ("i--", ["i--"]),
+        ("y--", ["v--"]),
+        # mid back.
+        ("-o-", ["-e-"]),
+        ("u-o-", ["u-o-", "-o-"]),
+        ("i-o-", ["i-o-"]),
+        # mid front.
+        ("-e-", ["-eh-"]),
+        ("i-e-", ["i-eh-"]),
+        ("y-e-", ["v-eh-"]),
+        # low back.
+        ("-a-", ["-a-", "--r"]),
+        ("u-a-", ["u-a-"]),
+        # low front.
+        ("i-a-", ["i-a-"]),
+        # mid back.
+        ("-o-u", ["-o-u"]),
+        ("i--u", ["i-o-u", "i--u"]),
+        # mid front.
+        ("-e-i", ["-eh-i"]),
+        ("u--i", ["u-eh-i", "u--i"]),
+        # low back.
+        ("-a-u", ["-a-o"]),
+        ("i-a-u", ["i-a-o"]),
+        # low front.
+        ("-a-i", ["-a-i"]),
+        ("u-a-i", ["u-a-i"]),
+        ("i-a-i", ["i-a-i"]),
+        # high back.
+        ("e--n", ["-e-n"]),
+        ("u--n", ["u--n", "u-e-n"]),
+        # high front.
+        ("i--n", ["i--n"]),
+        ("y--n", ["v--n"]),
+        # low back.
+        ("-a-n", ["-a-n"]),
+        ("u-a-n", ["u-a-n"]),
+        # low front.
+        ("i-a-n", ["i-a-n"]),
+        ("y-a-n", ["v-a-n"]),
+        # high back.
+        ("e--ng", ["-e-ng"]),
+        ("u--ng", ["-o-ng", "u-e-ng", "u-o-ng"]),
+        # high front.
+        ("i--ng", ["i--ng"]),
+        ("y--ng", ["i-o-ng"]),
+        # low back.
+        ("-a-ng", ["-a-ng"]),
+        ("u-a-ng", ["u-a-ng"]),
+        # low front.
+        ("i-a-ng", ["i-a-ng"]),
+    ]
+    for pinyin in pinyin_list
 }
 
-APICAL = {
-    "zhi": "zheu",
-    "chi": "cheu",
-    "shi": "sheu",
-    "ri": "reu",
-    "zi": "zeu",
-    "ci": "ceu",
-    "si": "seu",
-}
 
-RHOTIC = {
-    "er": "ra",
-}
-
-ALVEOLO_PALATAL = {
-    "j": "z",
-    "q": "c",
-    "x": "s",
-}
-
-TONE = {
-    "1": "h",
-    "2": "x",
-    "3": "q",
-    "4": "s",
-    "5": "",
-}
+def parse_token(token: str):
+    match = TOKEN_RE.fullmatch(token.lower())
+    if match is None:
+        return None
+    initial, medial, vowel, tail, tone = match.groups()
+    return (
+        initial or "",
+        medial or "",
+        vowel or "",
+        tail or "",
+        tone or "",
+    )
 
 
-def convert_base(base: str) -> str:
-    if base in ZERO:
-        return ZERO[base]
-    if base in APICAL:
-        return APICAL[base]
-    if base in RHOTIC:
-        return RHOTIC[base]
-
-    if base[0] in ALVEOLO_PALATAL:
-        initial = ALVEOLO_PALATAL[base[0]]
-        rest = base[1:]
-        if rest.startswith("u"):
-            return initial + "y" + rest[1:]
-        if rest == "iong":
-            return initial + "yng"
-        if rest.startswith("i"):
-            return initial + rest
-        return initial + rest
-
-    if "v" in base:
-        base = base.replace("v", "y")
-
-    if base in {"bo", "po", "mo", "fo", "lo", "o"}:
-        return base[:-1] + "uo"
-
-    if base.endswith("e") and not base.endswith(("ie", "ue", "ye")):
-        base = base[:-1] + "o"
-
-    if base.endswith("ao"):
-        base = base[:-2] + "au"
-
-    if base.endswith("iong"):
-        base = base[:-4] + "yng"
-    elif base.endswith("ong"):
-        base = base[:-3] + "ung"
-
-    if base.endswith("ueng"):
-        base = base[:-4] + "ung"
-
-    return base
+def throw_illegal_syllable(reason) -> Never:
+    raise ValueError(f"illegal pinyin syllable: {reason}")
 
 
-def convert_syllable(token: str) -> str:
-    match = re.fullmatch(r"([a-z]+)([1-5])", token)
-    if not match:
-        return token
-    base, tone = match.groups()
-    return convert_base(base) + TONE[tone]
+def normalize_syllable(syllable: str):
+    parts = parse_token(syllable)
+    if parts is None:
+        throw_illegal_syllable(f"parse {syllable}")
+    initial, medial, nucleus, coda, tone = parts
+
+    match initial:
+        case str():
+            pass
+        case None:
+            initial = ""
+        case _:
+            throw_illegal_syllable(f"initial {syllable} {parts}")
+
+    match medial:
+        case "y" | "yi":
+            medial = "i"
+        case "w" | "wu":
+            medial = "u"
+        case "ü" | "yu":
+            medial = "v"
+        case str():
+            pass
+        case None:
+            medial = ""
+        case _:
+            throw_illegal_syllable(f"medial {syllable} {parts}")
+
+    match nucleus:
+        case "ê":
+            nucleus = "eh"
+        case str():
+            pass
+        case None:
+            nucleus = ""
+        case _:
+            throw_illegal_syllable(f"nucleus {syllable} {parts}")
+
+    match coda:
+        case str():
+            pass
+        case None:
+            coda = ""
+        case _:
+            throw_illegal_syllable(f"coda {syllable} {parts}")
+
+    match (initial, medial, nucleus):
+        case ("n" | "l", "u", "e") | ("j" | "q" | "x", "u", _):
+            medial = "v"
+
+    match (medial, nucleus, coda):
+        case ("i" | "v", "e", _) | (_, "e", "i"):
+            nucleus = "eh"
+
+    match (initial, medial, nucleus, coda):
+        case ("b" | "p" | "m" | "f", "", "e", "ng"):
+            nucleus = "o"
+
+    match (initial, medial, nucleus, coda):
+        case ("r", "", "", ""):
+            coda = "r"
+        case ("", _, "e", "r"):
+            initial = "r"
+            nucleus = ""
+
+    match (initial, medial):
+        case ("ch" | "zh" | "sh" | "r" | "c" | "z" | "s", "i"):
+            medial = ""
+
+    new_initial = initial
+
+    match REGPI_FINAL_BY_PINYIN.get((medial, nucleus, coda)):
+        case (new_medial, new_nucleus, new_coda):
+            pass
+        case _:
+            throw_illegal_syllable(f"new_final {syllable} {(medial, nucleus, coda)}")
+
+    match tone:
+        case "1":
+            new_tone = "h"
+        case "2":
+            new_tone = "x"
+        case "3":
+            new_tone = "q"
+        case "4":
+            new_tone = "s"
+        case "5" | "":
+            new_tone = ""
+        case _:
+            throw_illegal_syllable(f"new_tone {syllable} {tone}")
+
+    return f"{new_initial}{new_medial}{new_nucleus}{new_coda}{new_tone}"
 
 
 def convert_code(code: str) -> str:
-    return " ".join(convert_syllable(token) for token in code.split())
+    return " ".join(normalize_syllable(syllable) for syllable in code.split())
 
 
 def default_version() -> str:
@@ -123,7 +201,9 @@ def default_version() -> str:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("terra", type=Path)
-    parser.add_argument("output", type=Path, nargs="?", default=Path("reg_pinhinh.dict.yaml"))
+    parser.add_argument(
+        "output", type=Path, nargs="?", default=Path("reg_pinhinh.dict.yaml")
+    )
     parser.add_argument("--name", default="reg_pinhinh")
     parser.add_argument("--version", default=default_version())
     parser.add_argument(

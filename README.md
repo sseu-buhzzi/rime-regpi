@@ -29,17 +29,19 @@
 |-------|-----|-----|-----|-----|-----|
 | b     | p   | m   | f   |     |     |
 | d     | t   | n   |     |     | l   |
-| g     | k   |     | h   |     |     |
-| zh    | ch  |     | sh  | r   |     |
 | z     | c   |     | s   |     |     |
+| zh    | ch  |     | sh  | r   |     |
+| j     | q   |     | x   |     |     |
+| g     | k   |     | h   |     |     |
 
 ## 韻
 
 | eu  | i    | u    | y   |
 |-----|------|------|-----|
 | a   | ia   | ua   |     |
-| o   | ie   | uo   | ye  |
-| ai  |      | uai  |     |
+| o   | io   | uo   |     |
+| e   | ie   |      | ye  |
+| ai  | iai  | uai  |     |
 | ei  |      | ui   |     |
 | au  | iau  |      |     |
 | ou  | iu   |      |     |
