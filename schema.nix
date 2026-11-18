@@ -1,11 +1,18 @@
-{ name, version }:
+{
+  name,
+  version,
+  schemaName ? "正則拼音",
+  description ? "正則拼音（reg_pinhinh）Rime 輸入方案。",
+  customPatch ? "reg_pinhinh.custom",
+  tonelessRegex ? "derive/^([a-z]+)[hxqs]$/$1/",
+}:
 {
   schema = {
     schema_id = name;
-    name = "正則拼音";
+    name = schemaName;
     version = version;
     author = [ "pinh-inh" ];
-    description = "正則拼音（reg_pinhinh）Rime 輸入方案。";
+    description = description;
     dependencies = [ "stroke" ];
   };
 
@@ -120,8 +127,8 @@
 
   __patch = [
     "grammar:/hant?"
-    "reg_pinhinh.custom:/patch?"
+    "${customPatch}:/patch?"
   ];
 
-  toneless.__append = [ "derive/^([a-z]+)[hxqs]$/$1/" ];
+  toneless.__append = [ tonelessRegex ];
 }
