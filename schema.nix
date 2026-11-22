@@ -1,11 +1,24 @@
-{ name, version }:
+{
+  lib,
+  name,
+  version,
+  schemaName,
+  description,
+  customPatch,
+  alphabet,
+  initials ? null,
+  finals ? null,
+  keyBinderBindings ? [ ],
+  recognizerPatterns ? { },
+  tonelessRegex,
+}:
 {
   schema = {
     schema_id = name;
-    name = "正則拼音";
+    name = schemaName;
     version = version;
     author = [ "pinh-inh" ];
-    description = "正則拼音（reg_pinhinh）Rime 輸入方案。";
+    description = description;
     dependencies = [ "stroke" ];
   };
 
@@ -72,7 +85,6 @@
   };
 
   speller = {
-    alphabet = "zyxwvutsrqponmlkjihgfedcba";
     delimiter = "'";
     algebra.__patch = [
       "pinyin:/abbreviation"
@@ -80,7 +92,10 @@
       "pinyin:/key_correction"
       "toneless"
     ];
-  };
+  }
+  // lib.optionalAttrs (alphabet != null) { inherit alphabet; }
+  // lib.optionalAttrs (initials != null) { inherit initials; }
+  // lib.optionalAttrs (finals != null) { inherit finals; };
 
   translator = {
     dictionary = name;
@@ -108,20 +123,26 @@
   };
 
   punctuator.import_preset = "symbols";
-  key_binder.import_preset = "default";
+  key_binder = {
+    import_preset = "default";
+  }
+  // lib.optionalAttrs (keyBinderBindings != [ ]) {
+    bindings = keyBinderBindings;
+  };
 
   recognizer = {
     import_preset = "default";
     patterns = {
       punct = "^/([0-9]0?|[A-Za-z]+)$";
       reverse_lookup = "`[a-z]*'?$";
-    };
+    }
+    // recognizerPatterns;
   };
 
   __patch = [
     "grammar:/hant?"
-    "reg_pinhinh.custom:/patch?"
+    "${customPatch}:/patch?"
   ];
 
-  toneless.__append = [ "derive/^([a-z]+)[hxqs]$/$1/" ];
+  toneless.__append = [ tonelessRegex ];
 }

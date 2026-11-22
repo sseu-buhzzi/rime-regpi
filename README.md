@@ -2,12 +2,17 @@
 
 ## 字典所出
 
-版本以 `VERSION` 為唯一所本；flake、字典與 schema 皆取之。`generate_reg_pinhinh_dict.py` 可用 `--name`、`--version` 另行指定。
+版本以 `VERSION` 為唯一所本；flake、字典與 schema 皆取之。`generate_reg_pinhinh_dict.py` 可用 `--name`、`--version` 另行指定。另可用 `--scheme regpi|regsp` 選擇輸出。
 
 - **Nix 用家**：以 flake 所出為唯一正本。
   - 完備 Rime package（含 `out`、`plum`）：
     ```sh
     nix build .#default
+    nix build .#rime-regpi
+    ```
+  - 完備 REGSP Rime package：
+    ```sh
+    nix build .#rime-regsp
     ```
   - 僅取字典：
     ```sh
@@ -17,8 +22,16 @@
     ```sh
     nix build .#schema
     ```
-- **非 Nix 用家**：repo 內 `reg_pinhinh.dict.yaml` 與 `reg_pinhinh.schema.yaml` 為 vendored copy，**或未及時更新**。
-- 更新 vendored copy（dict 與 schema；於 repo 根目錄執行）：
+  - 僅取三拼字典：
+    ```sh
+    nix build .#regsp-dict
+    ```
+  - 僅取三拼 schema：
+    ```sh
+    nix build .#regsp-schema
+    ```
+- **非 Nix 用家**：repo 內 `reg_pinhinh.dict.yaml`、`reg_pinhinh.schema.yaml`、`regsp.dict.yaml` 與 `regsp.schema.yaml` 為 vendored copy，**或未及時更新**。
+- 更新 vendored copy（regpi 與 regsp 的 dict/schema；於 repo 根目錄執行）：
   ```sh
   nix run .#update-vendored -- reg_pinhinh.dict.yaml
   ```
@@ -56,6 +69,57 @@
 |-----|-----|-----|-----|
 | h   | x   | q   | s   |
 | bah | bax | baq | bas |
+
+## 正則三拼
+
+- 分佈：
+
+|   |eu | o | a | ei| ai| ou| au| en| an| eg| ag|
+|   | i |ie |ia |   |   | iu|iau| in|ian| ig|iag|
+|   | u |uo |ua | ui|uai|   |   | un|uan| ug|uag|
+|   | y |ye |   |   |   |   |   | yn|yan| yg|   |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| b | / | / | a | ei| ai| ou| au| en| an| / | ag|
+|   | i |ie |ia |   |   | iu|iau| in|ian| ig| / |
+|   | u |uo | / | / | / |   |   | / | / | ug| / |
+| d | / | o | a | ei| ai| ou| au| / |an | eg| ag|
+|   | i |ie |ia |   |   | iu|iau| / |ian| ig| / |
+|   | u |uo | / | ui| / |   |   | un|uan| ug| / |
+| ni| / | / | / | / | / | / | / | / | / | / | / |
+|   | i |ie |ia |   |   | iu|iau| in|ian| ig|iag|
+|   | y |ye | / | / | / |   |   | / | / | / | / |
+| z |eu | o | a | ei| ai| ou| au| en|an | eg| ag|
+|   | / | / | / |   |   | / | / | / | / | / | / |
+|   | u |uo | / | ui| / |   |   | un|uan| ug| / |
+| zh|eu | o | a | / | ai| ou| au| en|an | eg| ag|
+|   | / | / | / |   |   | / | / |   |   | / | / |
+|   | u |uo |ua | ui|uai|   |   | un|uan| ug|uag|
+| j | / | / | / | / | / | / | / | / | / | / | / |
+|   | i |ie |ia |   |   | iu|iau| in|ian| ig|iag|
+|   | y |ye | / | / | / |   |   | yn|yan| yg| / |
+| g | / | o | a | ei| ai| ou| au| en|an | eg| ag|
+|   | / | / | / |   |   | / | / | / | / | / | / |
+|   | u |uo |ua | ui|uai|   |   | un|uan| ug| / |
+
+- 鍵位：
+
+```
+| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 0 |
+|---|---|---|---|---|---|---|---|---|---|
+| f | m | p | b | r | d | t | n | l |   |
+ | i | x | q | j | zh| ch| sh| ni| li|   |
+   | 0 | h | k | g | z | c | s |   |   |   |
+| ui|uai| iu|iau| in| ig|ua |uo |ie | u |
+ | ei| ai| ou| au| en| eg| a | o |eu |   |
+   |uan|ian| an| un| ug| ag|uag|   |   |   |
+| ui|uai| iu|iau| in| ig|ia |ye |ie | y |
+ | ei|iai| ou| au| en| eg| a | o | i |   |
+   |yan|ian| an| yn| yg| ag|iag|   |   |   |
+|   |   |   |   |   |   |   |   |   | 5 |
+ |   |   |   |   |   |   |   |   |   | 1 |
+   |   |   |   |   |   |   |   | 4 | 3 | 2 |
+```
+
 
 ## 引用
 
