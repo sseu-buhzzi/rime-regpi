@@ -67,6 +67,7 @@
           }
         ];
         recognizerPatterns."url/=" = null;
+        extraFilters = [ "lua_filter@*regsp_preedit" ];
         tonelessRegex = "derive/^([a-z]{2}).$/$1/";
       };
 
@@ -155,10 +156,14 @@
               }
               ''
                 rime_data="$out/share/rime-data"
-                mkdir -p "$rime_data" "$plum"
+                mkdir -p "$rime_data/lua" "$plum/lua"
                 install -m644 '${regspSchema}' "$rime_data/regsp.schema.yaml"
                 install -m644 '${regspDict}' "$rime_data/regsp.dict.yaml"
+                install -m644 '${./lua/regsp_preedit.lua}' "$rime_data/lua/regsp_preedit.lua"
+                install -m644 '${./lua/regsp_preedit_data.lua}' "$rime_data/lua/regsp_preedit_data.lua"
                 ln -s "$rime_data"/*.yaml "$plum/"
+                ln -s "$rime_data/lua/regsp_preedit.lua" "$plum/lua/regsp_preedit.lua"
+                ln -s "$rime_data/lua/regsp_preedit_data.lua" "$plum/lua/regsp_preedit_data.lua"
               '';
 
           updateVendored = pkgs.writeShellApplication {

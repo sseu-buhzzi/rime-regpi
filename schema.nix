@@ -10,6 +10,7 @@
   finals ? null,
   keyBinderBindings ? [ ],
   recognizerPatterns ? { },
+  extraFilters ? [ ],
   tonelessRegex,
 }:
 {
@@ -78,7 +79,7 @@
       "reverse_lookup_translator"
       "script_translator"
     ];
-    filters = [
+    filters = extraFilters ++ [
       "simplifier"
       "uniquifier"
     ];
