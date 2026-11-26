@@ -15,7 +15,7 @@ custom_phrase:
   user_dict: custom_phrase
 engine:
   filters:
-  - lua_filter@*regsp_preedit
+  - regsp_preedit
   - simplifier
   - uniquifier
   processors:

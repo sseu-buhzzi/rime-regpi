@@ -14,6 +14,10 @@
     ```sh
     nix build .#rime-regsp
     ```
+  - 插件 rime-regsp-preedit 之源碼樹：
+    ```sh
+    nix build .#rime-regsp-preedit-plugin-src
+    ```
   - 僅取字典：
     ```sh
     nix build .#dict

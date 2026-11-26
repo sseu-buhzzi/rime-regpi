@@ -67,7 +67,10 @@
           }
         ];
         recognizerPatterns."url/=" = null;
-        extraFilters = [ "lua_filter@*regsp_preedit" ];
+        # Squirrel ships the `regsp_preedit` component as the
+        # librime-regsp-preedit plugin; it renders the input as Bopomofo with
+        # tone marks in the preedit.
+        extraFilters = [ "regsp_preedit" ];
         tonelessRegex = "derive/^([a-z]{2}).$/$1/";
       };
 
@@ -156,14 +159,22 @@
               }
               ''
                 rime_data="$out/share/rime-data"
-                mkdir -p "$rime_data/lua" "$plum/lua"
+                mkdir -p "$rime_data" "$plum"
                 install -m644 '${regspSchema}' "$rime_data/regsp.schema.yaml"
                 install -m644 '${regspDict}' "$rime_data/regsp.dict.yaml"
-                install -m644 '${./lua/regsp_preedit.lua}' "$rime_data/lua/regsp_preedit.lua"
-                install -m644 '${./lua/regsp_preedit_data.lua}' "$rime_data/lua/regsp_preedit_data.lua"
                 ln -s "$rime_data"/*.yaml "$plum/"
-                ln -s "$rime_data/lua/regsp_preedit.lua" "$plum/lua/regsp_preedit.lua"
-                ln -s "$rime_data/lua/regsp_preedit_data.lua" "$plum/lua/regsp_preedit_data.lua"
+              '';
+
+          # Source tree for squirrel-nix's `extraPlugins`, which stages it at
+          # librime/plugins/<name> and builds librime-regsp-preedit.dylib into
+          # Squirrel.app/Contents/Frameworks/rime-plugins/. The plugin provides
+          # the `regsp_preedit` filter, so it travels with the schema instead of
+          # living in the Rime user directory.
+          rimeRegspPreeditPluginSrc =
+            pkgs.runCommandLocal "rime-regsp-preedit-plugin-src-${version}" { }
+              ''
+                mkdir -p "$out"
+                cp -a '${./rime-regsp-preedit}/.' "$out/"
               '';
 
           updateVendored = pkgs.writeShellApplication {
@@ -227,6 +238,7 @@
           default = rimePackage;
           rime-regpi = rimePackage;
           rime-regsp = rimeRegspPackage;
+          rime-regsp-preedit-plugin-src = rimeRegspPreeditPluginSrc;
           dict = dict;
           regsp-dict = regspDict;
           schema = schema;
