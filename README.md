@@ -125,6 +125,18 @@
 ```
 
 
+## rime-regsp-preedit 靜態分析、開發與測試
+
+```sh
+nix develop          # devShells.<system>.default
+cd rime-regsp-preedit
+cmake -S . -B build -DREGSP_PREEDIT_BUILD_TESTS=ON
+cmake --build build --parallel --target rime-regsp-preedit decode_test
+# Or `--target all`:
+# cmake --build build --parallel --target all
+print 'gg,\nbk/\n' | ./build/decode_test
+```
+
 ## 引用
 
 | 專案 | 用途 |

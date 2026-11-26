@@ -85,7 +85,7 @@ else()
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/rime-plugins"
   )
 
-  # Development helper: decode_test < cases.tsv > decoded.tsv
+  # Development helper.
   option(REGSP_PREEDIT_BUILD_TESTS "Build the standalone decoder test" OFF)
   if(REGSP_PREEDIT_BUILD_TESTS)
     add_executable(decode_test

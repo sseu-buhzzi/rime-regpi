@@ -177,6 +177,12 @@
                 cp -a '${./rime-regsp-preedit}/.' "$out/"
               '';
 
+          rimeRegspPreeditPlugin =
+            pkgs.callPackage ./rime-regsp-preedit/package.nix
+              {
+                inherit version;
+              };
+
           updateVendored = pkgs.writeShellApplication {
             name = "update-reg-pinhinh-vendored";
             meta = {
@@ -238,12 +244,44 @@
           default = rimePackage;
           rime-regpi = rimePackage;
           rime-regsp = rimeRegspPackage;
+          rime-regsp-preedit-plugin = rimeRegspPreeditPlugin;
           rime-regsp-preedit-plugin-src = rimeRegspPreeditPluginSrc;
           dict = dict;
           regsp-dict = regspDict;
           schema = schema;
           regsp-schema = regspSchema;
           update-vendored = updateVendored;
+        }
+      );
+
+      devShells = forAllSystems (
+        pkgs:
+        let
+          llvm = pkgs.llvmPackages;
+          plugin =
+            self.packages.${pkgs.stdenv.hostPlatform.system}.rime-regsp-preedit-plugin;
+          # The plugin includes librime's internal C++ headers.
+          devShell = pkgs.mkShell {
+            name = "rime-regsp-preedit-dev";
+            packages = [
+              llvm.clang
+              llvm.clang-tools
+            ];
+            inputsFrom = [ plugin ];
+            env = {
+              # librime internal headers, for `#include <rime/filter.h>`.
+              LIBRIME_SOURCE_DIR = "${plugin.librime.src}";
+              CC = "clang";
+              CXX = "clang++";
+              CMAKE_EXPORT_COMPILE_COMMANDS = "ON";
+            };
+            shellHook = ''
+              echo 'regsp preedit dev shell (librime ${plugin.librime.version}, clang ${llvm.clang.version})'
+            '';
+          };
+        in
+        {
+          default = devShell;
         }
       );
     };
